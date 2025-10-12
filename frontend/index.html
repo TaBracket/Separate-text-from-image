@@ -16,7 +16,6 @@
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
         padding: 20px;
-        direction: rtl;
       }
 
       .container {
@@ -31,8 +30,14 @@
       h1 {
         text-align: center;
         color: #667eea;
-        margin-bottom: 30px;
+        margin-bottom: 10px;
         font-size: 2.5em;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
       }
 
       .server-status {
@@ -42,6 +47,7 @@
         margin-bottom: 20px;
         text-align: center;
         border: 2px solid #ddd;
+        font-weight: bold;
       }
 
       .server-status.connected {
@@ -58,12 +64,7 @@
 
       .upload-section {
         text-align: center;
-        margin-bottom: 30px;
-      }
-
-      .file-input-wrapper {
-        position: relative;
-        display: inline-block;
+        margin: 30px 0;
       }
 
       input[type="file"] {
@@ -78,7 +79,7 @@
         cursor: pointer;
         font-size: 18px;
         font-weight: bold;
-        transition: transform 0.3s, box-shadow 0.3s;
+        transition: all 0.3s;
         display: inline-block;
       }
 
@@ -87,8 +88,9 @@
         box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
       }
 
-      .upload-btn:active {
-        transform: translateY(0);
+      .upload-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
 
       .preview-section {
@@ -119,9 +121,10 @@
       }
 
       .info-item {
-        padding: 10px;
+        padding: 15px;
         background: white;
-        border-radius: 5px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       }
 
       .info-label {
@@ -129,6 +132,12 @@
         color: #667eea;
         display: block;
         margin-bottom: 5px;
+        font-size: 14px;
+      }
+
+      .info-value {
+        color: #333;
+        font-size: 16px;
       }
 
       .ocr-section {
@@ -140,7 +149,7 @@
         display: none;
       }
 
-      .ocr-title {
+      .section-title {
         color: #667eea;
         font-size: 1.5em;
         margin-bottom: 15px;
@@ -149,14 +158,15 @@
 
       .ocr-text {
         background: #f8f9fa;
-        padding: 15px;
-        border-radius: 5px;
+        padding: 20px;
+        border-radius: 8px;
         min-height: 100px;
         white-space: pre-wrap;
         direction: ltr;
         text-align: left;
         font-family: "Courier New", monospace;
         font-size: 16px;
+        line-height: 1.6;
       }
 
       .detections-section {
@@ -168,40 +178,44 @@
         background: white;
         padding: 15px;
         margin: 10px 0;
-        border-radius: 5px;
+        border-radius: 8px;
         border-right: 4px solid #667eea;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       }
 
       .detection-text {
         font-size: 18px;
         font-weight: bold;
         color: #333;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
         direction: ltr;
         text-align: left;
       }
 
       .detection-confidence {
-        color: #28a745;
+        display: inline-block;
+        background: #28a745;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
         font-size: 14px;
+        font-weight: bold;
       }
 
       .loading {
         text-align: center;
-        padding: 20px;
-        color: #667eea;
-        font-size: 18px;
+        padding: 40px 20px;
         display: none;
       }
 
       .spinner {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #667eea;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #667eea;
         border-radius: 50%;
-        width: 50px;
-        height: 50px;
+        width: 60px;
+        height: 60px;
         animation: spin 1s linear infinite;
-        margin: 20px auto;
+        margin: 0 auto 20px;
       }
 
       @keyframes spin {
@@ -213,11 +227,23 @@
         }
       }
 
+      .loading-text {
+        color: #667eea;
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+
+      .loading-subtext {
+        color: #666;
+        font-size: 14px;
+      }
+
       .error-message {
         background: #f8d7da;
         color: #721c24;
         padding: 15px;
-        border-radius: 5px;
+        border-radius: 8px;
         margin: 20px 0;
         display: none;
         border: 1px solid #f5c6cb;
@@ -226,18 +252,115 @@
   </head>
   <body>
     <div class="container">
-      <h1>🔍 استخراج متن با EasyOCR</h1>
+      <h1>🔍 استخراج متن از تصویر</h1>
+      <p class="subtitle">با استفاده از EasyOCR</p>
 
       <div class="server-status disconnected" id="serverStatus">
         ⚠️ در حال بررسی اتصال به سرور...
       </div>
 
       <div class="upload-section">
-        <div class="file-input-wrapper">
-          <label for="imageInput" class="upload-btn" id="uploadBtn">
-            📷 انتخاب تصویر
+        <label for="imageInput" class="upload-btn disabled" id="uploadBtn">
+          📷 انتخاب تصویر
+        </label>
+        <input type="file" id="imageInput" accept="image/*" disabled />
+
+        <div
+          style="
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff3cd;
+            border-radius: 10px;
+            border: 2px solid #ffc107;
+          "
+        >
+          <label
+            style="
+              font-weight: bold;
+              color: #856404;
+              display: block;
+              margin-bottom: 10px;
+              font-size: 18px;
+            "
+          >
+            ⚡ حالت فوق‌سریع (Tesseract)
           </label>
-          <input type="file" id="imageInput" accept="image/*" disabled />
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              cursor: pointer;
+            "
+          >
+            <input
+              type="checkbox"
+              id="fastMode"
+              style="width: 20px; height: 20px; cursor: pointer"
+            />
+            <span style="font-weight: bold"
+              >استفاده از Tesseract به جای EasyOCR (10 برابر سریع‌تر!)</span
+            >
+          </label>
+          <p style="color: #856404; font-size: 14px; margin-top: 10px">
+            ⚠️ توجه: Tesseract نصب باشه، سرعت خیلی بالا ولی دقت کمتر
+          </p>
+        </div>
+
+        <div style="margin-top: 20px">
+          <label
+            style="
+              font-weight: bold;
+              color: #667eea;
+              display: block;
+              margin-bottom: 10px;
+            "
+          >
+            🎯 حالت دقیق (کند):
+          </label>
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              cursor: pointer;
+            "
+          >
+            <input
+              type="checkbox"
+              id="multiEngine"
+              style="width: 20px; height: 20px; cursor: pointer"
+            />
+            <span>استفاده از هر دو موتور (بسیار دقیق، بسیار کند ⚠️)</span>
+          </label>
+        </div>
+
+        <div style="margin-top: 20px">
+          <label
+            style="
+              font-weight: bold;
+              color: #667eea;
+              display: block;
+              margin-bottom: 10px;
+            "
+          >
+            ⚙️ سطح پیش‌پردازش:
+          </label>
+          <select
+            id="preprocessLevel"
+            style="
+              padding: 10px;
+              border-radius: 10px;
+              border: 2px solid #667eea;
+              font-size: 16px;
+              width: 250px;
+            "
+          >
+            <option value="none">بدون پیش‌پردازش</option>
+            <option value="light" selected>ملایم (پیشنهادی)</option>
+            <option value="medium">متوسط</option>
+            <option value="strong">قوی</option>
+          </select>
         </div>
       </div>
 
@@ -245,9 +368,9 @@
 
       <div class="loading" id="loading">
         <div class="spinner"></div>
-        <p>در حال پردازش تصویر با EasyOCR...</p>
-        <p style="font-size: 14px; color: #666; margin-top: 10px">
-          این ممکن است چند ثانیه طول بکشد...
+        <p class="loading-text">در حال پردازش تصویر...</p>
+        <p class="loading-subtext">
+          لطفاً صبر کنید، این ممکن است چند ثانیه طول بکشد
         </p>
       </div>
 
@@ -257,34 +380,77 @@
       </div>
 
       <div class="info-section" id="infoSection">
-        <h2 style="color: #667eea; margin-bottom: 15px">اطلاعات تصویر</h2>
+        <h2 style="color: #667eea; margin-bottom: 15px">📊 اطلاعات تصویر</h2>
         <div class="info-grid">
           <div class="info-item">
-            <span class="info-label">نام فایل:</span>
-            <span id="fileName"></span>
+            <span class="info-label">نام فایل</span>
+            <span class="info-value" id="fileName">-</span>
           </div>
           <div class="info-item">
-            <span class="info-label">فرمت:</span>
-            <span id="fileFormat"></span>
+            <span class="info-label">فرمت</span>
+            <span class="info-value" id="fileFormat">-</span>
           </div>
           <div class="info-item">
-            <span class="info-label">ابعاد:</span>
-            <span id="dimensions"></span>
+            <span class="info-label">عرض</span>
+            <span class="info-value" id="fileWidth">-</span>
           </div>
           <div class="info-item">
-            <span class="info-label">حالت:</span>
-            <span id="fileMode"></span>
+            <span class="info-label">ارتفاع</span>
+            <span class="info-value" id="fileHeight">-</span>
+          </div>
+        </div>
+        <div
+          style="
+            margin-top: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            color: white;
+            text-align: center;
+          "
+        >
+          <div style="font-size: 14px; margin-bottom: 5px">
+            میانگین دقت تشخیص
+          </div>
+          <div style="font-size: 24px; font-weight: bold" id="avgConfidence">
+            -
           </div>
         </div>
       </div>
 
       <div class="ocr-section" id="ocrSection">
-        <h2 class="ocr-title">📝 متن کامل استخراج شده</h2>
+        <h2 class="section-title">📝 متن استخراج شده (بعد از تصحیح)</h2>
         <div class="ocr-text" id="ocrText"></div>
 
+        <div
+          style="
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 8px;
+            display: none;
+          "
+          id="originalTextSection"
+        >
+          <h3 style="color: #856404; margin-bottom: 10px">
+            📋 متن اصلی (قبل از تصحیح)
+          </h3>
+          <div
+            style="
+              background: white;
+              padding: 15px;
+              border-radius: 5px;
+              font-family: 'Courier New', monospace;
+              direction: ltr;
+              text-align: left;
+            "
+            id="originalText"
+          ></div>
+        </div>
+
         <div class="detections-section" id="detectionsSection">
-          <h3 style="color: #667eea; margin: 20px 0 10px 0">
-            جزئیات تشخیص‌ها:
+          <h3 style="color: #667eea; margin: 20px 0 15px 0">
+            🔎 جزئیات تشخیص‌ها
           </h3>
           <div id="detectionsList"></div>
         </div>
@@ -293,16 +459,18 @@
 
     <script>
       const SERVER_URL = "http://localhost:5000";
-      const imageInput = document.getElementById("imageInput");
-      const uploadBtn = document.getElementById("uploadBtn");
-      const preview = document.getElementById("preview");
-      const previewSection = document.getElementById("previewSection");
-      const infoSection = document.getElementById("infoSection");
-      const ocrSection = document.getElementById("ocrSection");
-      const loading = document.getElementById("loading");
-      const errorMessage = document.getElementById("errorMessage");
-      const serverStatus = document.getElementById("serverStatus");
-      const detectionsSection = document.getElementById("detectionsSection");
+      const elements = {
+        imageInput: document.getElementById("imageInput"),
+        uploadBtn: document.getElementById("uploadBtn"),
+        preview: document.getElementById("preview"),
+        previewSection: document.getElementById("previewSection"),
+        infoSection: document.getElementById("infoSection"),
+        ocrSection: document.getElementById("ocrSection"),
+        loading: document.getElementById("loading"),
+        errorMessage: document.getElementById("errorMessage"),
+        serverStatus: document.getElementById("serverStatus"),
+        detectionsSection: document.getElementById("detectionsSection"),
+      };
 
       // بررسی اتصال به سرور
       async function checkServerConnection() {
@@ -311,50 +479,57 @@
           const data = await response.json();
 
           if (data.status === "healthy") {
-            serverStatus.className = "server-status connected";
-            serverStatus.innerHTML = "✅ سرور متصل است و آماده پردازش";
-            imageInput.disabled = false;
-            uploadBtn.style.opacity = "1";
+            elements.serverStatus.className = "server-status connected";
+            elements.serverStatus.innerHTML = "✅ سرور متصل و آماده است";
+            elements.imageInput.disabled = false;
+            elements.uploadBtn.classList.remove("disabled");
             return true;
           }
         } catch (error) {
-          serverStatus.className = "server-status disconnected";
-          serverStatus.innerHTML =
-            "❌ سرور در دسترس نیست. لطفاً سرور Python را اجرا کنید.";
-          imageInput.disabled = true;
-          uploadBtn.style.opacity = "0.5";
-          uploadBtn.style.cursor = "not-allowed";
+          elements.serverStatus.className = "server-status disconnected";
+          elements.serverStatus.innerHTML =
+            "❌ سرور در دسترس نیست - لطفاً server.py را اجرا کنید";
+          elements.imageInput.disabled = true;
+          elements.uploadBtn.classList.add("disabled");
           return false;
         }
       }
 
-      // بررسی اتصال در ابتدا و هر 5 ثانیه
+      // بررسی اولیه و دوره‌ای
       checkServerConnection();
       setInterval(checkServerConnection, 5000);
 
-      imageInput.addEventListener("change", async function (e) {
+      // هندل آپلود تصویر
+      elements.imageInput.addEventListener("change", async function (e) {
         const file = e.target.files[0];
         if (!file) return;
 
-        // مخفی کردن پیغام خطا
-        errorMessage.style.display = "none";
+        hideError();
 
         // نمایش پیش‌نمایش
         const reader = new FileReader();
         reader.onload = function (event) {
-          preview.src = event.target.result;
-          previewSection.style.display = "block";
+          elements.preview.src = event.target.result;
+          elements.previewSection.style.display = "block";
         };
         reader.readAsDataURL(file);
 
         // نمایش لودینگ
-        loading.style.display = "block";
-        ocrSection.style.display = "none";
-        infoSection.style.display = "none";
+        elements.loading.style.display = "block";
+        elements.ocrSection.style.display = "none";
+        elements.infoSection.style.display = "none";
 
         // ارسال به سرور
         const formData = new FormData();
         formData.append("image", file);
+
+        // اضافه کردن تنظیمات
+        const preprocessLevel =
+          document.getElementById("preprocessLevel").value;
+        formData.append("preprocess", preprocessLevel);
+
+        const multiEngine = document.getElementById("multiEngine").checked;
+        formData.append("multi_engine", multiEngine ? "true" : "false");
 
         try {
           const response = await fetch(`${SERVER_URL}/ocr`, {
@@ -363,72 +538,112 @@
           });
 
           const data = await response.json();
-
-          loading.style.display = "none";
+          elements.loading.style.display = "none";
 
           if (data.success) {
-            // نمایش اطلاعات تصویر
-            document.getElementById("fileName").textContent =
-              data.image_info.filename;
-            document.getElementById("fileFormat").textContent =
-              data.image_info.format || "نامشخص";
-            document.getElementById(
-              "dimensions"
-            ).textContent = `${data.image_info.width} × ${data.image_info.height} پیکسل`;
-            document.getElementById("fileMode").textContent =
-              data.image_info.mode;
-
-            infoSection.style.display = "block";
-
-            // نمایش متن استخراج شده
-            if (data.full_text) {
-              document.getElementById("ocrText").textContent = data.full_text;
-              ocrSection.style.display = "block";
-
-              // نمایش جزئیات تشخیص‌ها
-              if (data.detections && data.detections.length > 0) {
-                const detectionsList =
-                  document.getElementById("detectionsList");
-                detectionsList.innerHTML = "";
-
-                data.detections.forEach((det, index) => {
-                  const detDiv = document.createElement("div");
-                  detDiv.className = "detection-item";
-                  detDiv.innerHTML = `
-                                    <div class="detection-text">${index + 1}. ${
-                    det.text
-                  }</div>
-                                    <div class="detection-confidence">
-                                        اعتماد: ${(
-                                          det.confidence * 100
-                                        ).toFixed(2)}%
-                                    </div>
-                                `;
-                  detectionsList.appendChild(detDiv);
-                });
-
-                detectionsSection.style.display = "block";
-              }
-            } else {
-              document.getElementById("ocrText").textContent =
-                "❌ متنی در تصویر یافت نشد.";
-              ocrSection.style.display = "block";
-            }
-
-            console.log("نتایج کامل OCR:", data);
+            displayResults(data);
           } else {
             showError("خطا در پردازش: " + data.error);
           }
         } catch (error) {
-          loading.style.display = "none";
+          elements.loading.style.display = "none";
           showError("خطا در ارتباط با سرور: " + error.message);
           console.error("Error:", error);
         }
       });
 
+      function displayResults(data) {
+        // نمایش اطلاعات تصویر
+        document.getElementById("fileName").textContent =
+          data.image_info.filename;
+        document.getElementById("fileFormat").textContent =
+          data.image_info.format;
+        document.getElementById("fileWidth").textContent =
+          data.image_info.width + " px";
+        document.getElementById("fileHeight").textContent =
+          data.image_info.height + " px";
+
+        // نمایش میانگین اعتماد
+        if (data.average_confidence) {
+          document.getElementById("avgConfidence").textContent =
+            (data.average_confidence * 100).toFixed(1) + "%";
+        }
+
+        elements.infoSection.style.display = "block";
+
+        // نمایش متن استخراج شده
+        if (data.full_text) {
+          document.getElementById("ocrText").textContent = data.full_text;
+
+          // نمایش متن اصلی اگر تصحیح شده باشه
+          if (data.corrections_count && data.corrections_count > 0) {
+            document.getElementById("originalText").textContent =
+              data.full_text_original;
+            document.getElementById("originalTextSection").style.display =
+              "block";
+          } else {
+            document.getElementById("originalTextSection").style.display =
+              "none";
+          }
+
+          elements.ocrSection.style.display = "block";
+
+          // نمایش جزئیات
+          if (data.detections && data.detections.length > 0) {
+            const list = document.getElementById("detectionsList");
+            list.innerHTML = "";
+
+            data.detections.forEach((det, index) => {
+              const div = document.createElement("div");
+              div.className = "detection-item";
+
+              let html = `<div class="detection-text">${index + 1}. ${
+                det.text
+              }</div>`;
+
+              // نمایش موتور استفاده شده
+              html += `<div style="font-size: 12px; color: #666; margin: 5px 0;">
+                            موتور: ${det.engine}
+                        </div>`;
+
+              // نمایش متن اصلی اگر تصحیح شده باشه
+              if (det.corrected) {
+                html += `<div style="font-size: 14px; color: #856404; margin: 5px 0;">
+                                قبل از تصحیح: ${det.original_text}
+                            </div>`;
+              }
+
+              html += `<span class="detection-confidence">
+                            ${(det.confidence * 100).toFixed(1)}% اعتماد
+                        </span>`;
+
+              if (det.corrected) {
+                html += ` <span style="background: #ffc107; color: #000; padding: 5px 10px; border-radius: 15px; font-size: 12px; margin-right: 10px;">✨ تصحیح شده</span>`;
+              }
+
+              div.innerHTML = html;
+              list.appendChild(div);
+            });
+
+            elements.detectionsSection.style.display = "block";
+          }
+        } else {
+          document.getElementById("ocrText").textContent =
+            "❌ متنی در تصویر یافت نشد";
+          document.getElementById("originalTextSection").style.display = "none";
+          elements.ocrSection.style.display = "block";
+        }
+
+        console.log("نتایج کامل:", data);
+      }
+
       function showError(message) {
-        errorMessage.textContent = "❌ " + message;
-        errorMessage.style.display = "block";
+        elements.errorMessage.textContent = "❌ " + message;
+        elements.errorMessage.style.display = "block";
+      }
+
+      function hideError() {
+        elements.errorMessage.style.display = "none";
       }
     </script>
   </body>
